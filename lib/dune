@@ -1,0 +1,8 @@
+(library
+ (name pocket)
+ (libraries core menhirLib))
+
+(ocamllex lexer)
+
+(menhir
+ (modules parser))
