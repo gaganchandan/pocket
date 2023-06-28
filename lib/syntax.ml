@@ -46,6 +46,7 @@ type command =
   | Assign of var * expr * loc
   | Print of expr * loc
   | Read of var * loc
+  | Convert of string * type' * loc
   | Len of expr * loc
   | If of expr * command * command * loc
   | While of expr * command * loc

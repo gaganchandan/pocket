@@ -1,9 +1,11 @@
 {
     open Parser
     open Syntax
-    let get_pos lexbuf = 
-        let pos = Lexing.lexeme_start_p lexbuf in
-        (pos.pos_lnum, pos.pos_cnum - pos.pos_bol + 1)
+
+    let get_pos lexbuf =
+      let pos = Lexing.lexeme_start_p lexbuf in
+      (pos.pos_lnum, pos.pos_cnum - pos.pos_bol + 1)
+
 }
 
 let white = [' ' '\t']
@@ -30,6 +32,7 @@ rule lex =
     | "return"              { RETURN }
     | "print"               { PRINT }
     | "read"                { READ }
+    | "convert"             { CONVERT }
     | "len"                 { LEN }
     (* Operators *)
     | "+"                   { PLUS }
