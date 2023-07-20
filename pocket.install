@@ -6,3 +6,7 @@ lib: [
 bin: [
   "_build/install/default/bin/pocket"
 ]
+doc: [
+  "_build/install/default/doc/pocket/LICENSE"
+  "_build/install/default/doc/pocket/README.md"
+]
