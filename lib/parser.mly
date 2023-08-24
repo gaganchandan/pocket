@@ -24,12 +24,12 @@
 %token EOF
 
 %left LBRACKET
-%left TIMES DIVIDE MOD 
-%left PLUS MINUS 
+%left AND OR
 %left LT GT LEQ GEQ
 %left EQ NEQ
+%left PLUS MINUS 
+%left TIMES DIVIDE MOD 
 %right NOT
-%left AND OR
 
 %start <Syntax.command> prog
 %type <Syntax.command> command
@@ -48,7 +48,7 @@ command:
     | v=var ASSIGN e=expr SEMICOLON { Assign (v, e, $startpos) }
     | PRINT LPAREN e=expr RPAREN SEMICOLON { Print (e, $startpos) }
     | READ LPAREN v=var RPAREN SEMICOLON { Read (v, $startpos) }
-    | CONVERT LPAREN v=VAR COMMA t=ptype RPAREN SEMICOLON { Convert (v, t, $startpos) }
+    | CONVERT LPAREN v=var COMMA t=ptype RPAREN SEMICOLON { Convert (v, t, $startpos) }
     | LEN LPAREN e=expr RPAREN SEMICOLON { Len (e, $startpos) }
     | IF LPAREN e=expr RPAREN LBRACE c1=command RBRACE ELSE LBRACE c2=command RBRACE { If (e, c1, c2, $startpos) }
     | WHILE LPAREN e=expr RPAREN LBRACE c=command RBRACE { While (e, c, $startpos) }
