@@ -49,7 +49,6 @@ command:
     | PRINT LPAREN e=expr RPAREN SEMICOLON { Print (e, $startpos) }
     | READ LPAREN v=var RPAREN SEMICOLON { Read (v, $startpos) }
     | CONVERT LPAREN v=var COMMA t=ptype RPAREN SEMICOLON { Convert (v, t, $startpos) }
-    | LEN LPAREN e=expr RPAREN SEMICOLON { Len (e, $startpos) }
     | IF LPAREN e=expr RPAREN LBRACE c1=command RBRACE ELSE LBRACE c2=command RBRACE { If (e, c1, c2, $startpos) }
     | WHILE LPAREN e=expr RPAREN LBRACE c=command RBRACE { While (e, c, $startpos) }
     | fd=func_def  { fd }
@@ -97,6 +96,7 @@ expr:
     | e1=expr AND e2=expr { Binop (And, e1, e2, $startpos) }
     | e1=expr OR e2=expr { Binop (Or, e1, e2, $startpos) }
     | e1=expr LBRACKET e2=expr RBRACKET { Index (e1, e2, $startpos) }
+    | LEN LPAREN e=expr RPAREN { Len (e, $startpos) }
     | fc=func_call { FuncCall (fc, $startpos) }
 
 lst:
@@ -121,4 +121,5 @@ func_def:
 
 func_body:
     | c=command { NoRet c }
-    | c=command RETURN e=expr SEMICOLON { Ret (c, e, $startpos) }
+    | c=command RETURN e=expr SEMICOLON { Ret (Some c, e, $startpos) }
+    | RETURN e=expr SEMICOLON { Ret (None, e, $startpos) }

@@ -46,8 +46,7 @@ type command =
   | Assign of var * expr * loc
   | Print of expr * loc
   | Read of var * loc
-  | Convert of string * type' * loc
-  | Len of expr * loc
+  | Convert of var * type' * loc
   | If of expr * command * command * loc
   | While of expr * command * loc
   | FuncDef of func_def
@@ -67,7 +66,7 @@ and type' =
   | TNone of loc
 
 and func_def = string * typed_var list * type' * func_body * loc
-and func_body = Ret of command * expr * loc | NoRet of command
+and func_body = Ret of command option * expr * loc | NoRet of command
 
 and expr =
   | Id of string * loc
@@ -76,6 +75,7 @@ and expr =
   | Bool of bool * loc
   | List of expr list * loc
   | Index of expr * expr * loc
+  | Len of expr * loc
   | Unop of unop * expr * loc
   | Binop of binop * expr * expr * loc
   | FuncCall of (string * expr list) * loc
@@ -100,6 +100,6 @@ and binop =
 let syntax_error (msg : string) (pos : int * int) : unit =
   let lnum, cnum = pos in
   print_endline
-    ("SyntaxError: " ^ msg ^ " at " ^ string_of_int lnum ^ ":"
+    ("SyntaxError on line " ^ string_of_int lnum ^ ": " ^ msg
    ^ string_of_int cnum);
   exit 0

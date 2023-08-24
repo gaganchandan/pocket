@@ -7,7 +7,8 @@ let parse (src : string) : Pocket.Syntax.command =
   ast
 
 let run (file : string) : unit =
-  file |> In_channel.read_all |> parse |> fun _ -> ()
+  file |> In_channel.read_all |> parse
+  |> Pocket.Typecheck.typecheck_cmd Pocket.Typecheck.env
 
 let main : unit =
   let args = Sys.get_argv () in
