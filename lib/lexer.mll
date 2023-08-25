@@ -66,6 +66,7 @@ rule lex =
     | "bool"                { TBOOL }
     | "intlist"             { TINTLIST }
     | "charlist"            { TCHARLIST }
+    | "string"              { TCHARLIST }
     | "boollist"            { TBOOLLIST }
     | "none"                { TNONE }
     (* Values *)
