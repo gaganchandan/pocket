@@ -38,6 +38,7 @@
 %type <string * Syntax.expr list> func_call
 %type <Syntax.expr list> elem
 %type <Syntax.typed_var list> param
+%type <Syntax.lvalue> lvalue
 
 %%
 prog:
@@ -45,7 +46,8 @@ prog:
 
 command:
     | LPAREN c=command RPAREN { c }
-    | v=var ASSIGN e=expr SEMICOLON { Assign (v, e, $startpos) }
+    | l=lvalue ASSIGN e=expr SEMICOLON { Assign (l, e, $startpos) }
+    | t=typed_var SEMICOLON { VarDecl (t, $startpos) }
     | PRINT LPAREN e=expr RPAREN SEMICOLON { Print (e, $startpos) }
     | READ LPAREN v=var RPAREN SEMICOLON { Read (v, $startpos) }
     | CONVERT LPAREN v=var COMMA t=ptype RPAREN SEMICOLON { Convert (v, t, $startpos) }
@@ -58,6 +60,12 @@ command:
 
 typed_var:
     | v=VAR COLON t=ptype { (v, t, $startpos) }
+
+
+lvalue:
+    | v=VAR { Var (v, $startpos) }
+    | v=VAR COLON t=ptype { TypedVar (v, t, $startpos) }
+    | e1=expr LBRACKET e2=expr RBRACKET { AssignIndex (e1, e2, $startpos) }
 
 var:
     | v=VAR { Var (v, $startpos) }

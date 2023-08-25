@@ -43,7 +43,8 @@ type loc = Lexing.position
 
 type command =
   | Seq of command * command
-  | Assign of var * expr * loc
+  | Assign of lvalue * expr * loc
+  | VarDecl of typed_var * loc
   | Print of expr * loc
   | Read of var * loc
   | Convert of var * type' * loc
@@ -52,6 +53,11 @@ type command =
   | FuncDef of func_def
   | FuncCallCmd of (string * expr list) * loc
   | Pass of loc
+
+and lvalue =
+  | Var of string * loc
+  | TypedVar of string * type' * loc
+  | AssignIndex of expr * expr * loc
 
 and var = Var of string * loc | TypedVar of string * type' * loc
 and typed_var = string * type' * loc

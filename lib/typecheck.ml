@@ -153,18 +153,31 @@ let rec lookup (n : string) (env : entry list ref) loc =
       | _ -> lookup n { contents = es } loc)
 
 let rec add_typed_var (n : string) (t : typ) (env : entry list ref) loc =
-  match env with
-  | { contents = es } -> (
-      match es with
-      | [] ->
-          env :=
-            [ { name = n; typ = t; value = None; args = None; body = None } ]
-      | x :: xs ->
-          if x.name = n then
-            type_error
-              ("Variable " ^ n ^ " already defined with type " ^ string_of_typ t)
-              loc
-          else add_typed_var n t { contents = xs } loc)
+  let rec aux n t env acc =
+    match env with
+    | [] -> { name = n; typ = t; value = None; args = None; body = None } :: acc
+    | x :: xs ->
+        if x.name = n then (
+          type_error
+            ("Variable " ^ n ^ " already defined with type " ^ string_of_typ t)
+            loc;
+          acc @ env)
+        else aux n t xs (x :: acc)
+  in
+  env := aux n t !env []
+
+(* match env with *)
+(* | { contents = es } -> ( *)
+(*     match es with *)
+(*     | [] -> *)
+(*         env := *)
+(*           [ { name = n; typ = t; value = None; args = None; body = None } ] *)
+(*     | x :: xs -> *)
+(*         if x.name = n then *)
+(*           type_error *)
+(*             ("Variable " ^ n ^ " already defined with type " ^ string_of_typ t) *)
+(*             loc *)
+(*         else add_typed_var n t { contents = xs } loc) *)
 
 let rec update_env (e : entry) (env : entry list ref) =
   let rec aux e env acc =
@@ -179,6 +192,7 @@ let (env : entry list ref) = ref []
 let rec typecheck_cmd (env : entry list ref) cmd =
   match cmd with
   | Assign (var, expr, loc) -> typecheck_assign var expr loc env
+  | VarDecl (var, loc) -> typecheck_vardecl var loc env
   | Print (expr, loc) -> typecheck_print expr loc env
   | Read (var, loc) -> typecheck_read var loc env
   | Convert (var, typ, loc) -> typecheck_convert var typ loc env
@@ -193,39 +207,47 @@ let rec typecheck_cmd (env : entry list ref) cmd =
       typecheck_cmd env cmd1;
       typecheck_cmd env cmd2
 
-and typecheck_assign var expr loc env =
+and typecheck_assign lvalue expr loc env =
   let t1 = typecheck_expr expr env in
-  let t2 = typecheck_var var env in
-  if t1 = TUnknownList then
-    let aux = function
-      | TIntList | TCharList | TBoolList ->
-          update_env
-            {
-              name = get_var_name var;
-              typ = t2;
-              value = None;
-              args = None;
-              body = None;
-            }
-            env
-      | typ -> type_error "Cannot assign list to non-list variable" loc
-    in
-    aux t2
-  else if t1 = t2 then
-    update_env
-      {
-        name = get_var_name var;
-        typ = t2;
-        value = None;
-        args = None;
-        body = None;
-      }
-      env
+  let func (lvalue : lvalue) =
+    match lvalue with
+    | Var (name, loc) -> typecheck_var (Var (name, loc)) env
+    | TypedVar (name, typ, loc) -> typecheck_var (TypedVar (name, typ, loc)) env
+    | AssignIndex (e1, e2, loc) ->
+        let t1 = typecheck_expr e1 env in
+        let t2 = typecheck_expr e2 env in
+        if is_list t1 then
+          if t2 = TInt then typ_of_list t1
+          else
+            let () = type_error "Index must be an integer" loc in
+            TError
+        else
+          let () = type_error "Cannot index objects that are not lists" loc in
+          TError
+  in
+  let t2 = func lvalue in
+  if t1 = t2 then
+    match lvalue with
+    | Var (name, loc) ->
+        update_env
+          { name; typ = t2; value = None; args = None; body = None }
+          env
+    | TypedVar (name, typ, loc) ->
+        update_env
+          { name; typ = t2; value = None; args = None; body = None }
+          env
+    | _ -> ()
   else
     type_error
       ("Expected value of type " ^ string_of_typ t2 ^ ", got value of type "
      ^ string_of_typ t1)
       loc
+
+and typecheck_vardecl var loc env =
+  match var with
+  | name, type', loc ->
+      let t1 = typ_of_type' type' in
+      add_typed_var name t1 env loc
 
 and typecheck_print expr loc env =
   let _ = typecheck_expr expr env in
