@@ -1,5 +1,6 @@
 %{
     open Syntax
+    open Types
     let string_to_charlist (s:string) = 
         let rec make_expr (lst : char list) = 
             match lst with
@@ -8,7 +9,8 @@
         in s |> String.to_seq |> List.of_seq |> make_expr 
 %}
 
-%token IF ELSE PASS WHILE FUNCTION RETURN PRINT READ CONVERT LEN 
+%token IF ELSE PASS WHILE FUNCTION RETURN PRINT READ LEN
+(* %token CONVERT *)
 %token PLUS MINUS TIMES DIVIDE MOD
 %token EQ NEQ LT GT LEQ GEQ
 %token AND OR NOT
@@ -47,10 +49,10 @@ prog:
 command:
     | LPAREN c=command RPAREN { c }
     | l=lvalue ASSIGN e=expr SEMICOLON { Assign (l, e, $startpos) }
-    | t=typed_var SEMICOLON { VarDecl (t, $startpos) }
-    | PRINT LPAREN e=expr RPAREN SEMICOLON { Print (e, $startpos) }
-    | READ LPAREN v=var RPAREN SEMICOLON { Read (v, $startpos) }
-    | CONVERT LPAREN v=var COMMA t=ptype RPAREN SEMICOLON { Convert (v, t, $startpos) }
+    (* | t=typed_var SEMICOLON { VarDecl (t, $startpos) } *)
+    | PRINT LPAREN e=expr RPAREN SEMICOLON { Print (e, TNone, $startpos) }
+    | READ LPAREN v=var RPAREN SEMICOLON { Read (v, TNone, $startpos) }
+    (* | CONVERT LPAREN v=var COMMA t=ptype RPAREN SEMICOLON { Convert (v, t, $startpos) } *)
     | IF LPAREN e=expr RPAREN LBRACE c1=command RBRACE ELSE LBRACE c2=command RBRACE { If (e, c1, c2, $startpos) }
     | WHILE LPAREN e=expr RPAREN LBRACE c=command RBRACE { While (e, c, $startpos) }
     | fd=func_def  { fd }

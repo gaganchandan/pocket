@@ -32,7 +32,7 @@ rule lex =
     | "return"              { RETURN }
     | "print"               { PRINT }
     | "read"                { READ }
-    | "convert"             { CONVERT }
+    (* | "convert"             { CONVERT } *)
     | "len"                 { LEN }
     (* Operators *)
     | "+"                   { PLUS }
@@ -88,5 +88,3 @@ and lex_string buf =
     | [^ '"' '\\']+         { Buffer.add_string buf (Lexing.lexeme lexbuf); lex_string buf lexbuf }
     | _                     { Syntax.syntax_error ("Illegal character in string: " ^ (Lexing.lexeme lexbuf)) (get_pos lexbuf) ; exit 0 }
     | eof                   { Syntax.syntax_error "Unterminated string at end of file." (get_pos lexbuf); exit 0 }
-
-

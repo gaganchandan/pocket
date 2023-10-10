@@ -39,15 +39,17 @@ binop := + | - | * | / | % | == | != | < | <= | > | >= | AND | OR
 
 *)
 
+open Types
+
 type loc = Lexing.position
 
 type command =
   | Seq of command * command
   | Assign of lvalue * expr * loc
-  | VarDecl of typed_var * loc
-  | Print of expr * loc
-  | Read of var * loc
-  | Convert of var * type' * loc
+  (* | VarDecl of typed_var * loc *)
+  | Print of expr * typ * loc
+  | Read of var * typ * loc
+  (* | Convert of var * type' * loc *)
   | If of expr * command * command * loc
   | While of expr * command * loc
   | FuncDef of func_def
