@@ -1,55 +1,15 @@
-open Syntax
 open Lexing
+open Syntax
+open Types
 
 (* let gen_pos pos = (pos.pos_lnum, pos.pos_cnum - pos.pos_bol + 1) *)
 
+let errors = ref 0
+
 let type_error (msg : string) pos : unit =
+  errors := !errors + 1;
   print_endline
     ("TypeError on line " ^ string_of_int pos.pos_lnum ^ ": " ^ msg ^ "\n")
-
-type typ =
-  | TInt
-  | TChar
-  | TBool
-  | TIntList
-  | TCharList
-  | TBoolList
-  | TUnknownList
-  | TNone
-  | TUnknown
-  | TIntF
-  | TCharF
-  | TBoolF
-  | TIntListF
-  | TCharListF
-  | TBoolListF
-  | TUnknownListF
-  | TNoneF
-  | TUnknownF
-  | TError
-  | TUndef
-
-let string_of_typ = function
-  | TInt -> "int"
-  | TChar -> "char"
-  | TBool -> "bool"
-  | TIntList -> "intlist"
-  | TCharList -> "charlist"
-  | TBoolList -> "boollist"
-  | TNone -> "none"
-  | TUnknown -> "unknown"
-  | TUnknownList -> "unknownlist"
-  | TIntF -> "int"
-  | TCharF -> "char"
-  | TBoolF -> "bool"
-  | TIntListF -> "intlist"
-  | TCharListF -> "charlist"
-  | TBoolListF -> "boollist"
-  | TNoneF -> "none"
-  | TUnknownF -> "unknown"
-  | TUnknownListF -> "unknown"
-  | TError -> "error"
-  | TUndef -> "undefined"
 
 let typ_of_type' (typ : type') : typ =
   match typ with
@@ -60,41 +20,6 @@ let typ_of_type' (typ : type') : typ =
   | TCharList _ -> TCharList
   | TBoolList _ -> TBoolList
   | TNone _ -> TNone
-
-let funtyp_of_typ = function
-  | TInt -> TIntF
-  | TChar -> TCharF
-  | TBool -> TBoolF
-  | TIntList -> TIntListF
-  | TCharList -> TCharListF
-  | TBoolList -> TBoolListF
-  | TNone -> TNoneF
-  | TUnknown -> TUnknownF
-  | TUnknownList -> TUnknownListF
-  | _ -> failwith "Precondition failed"
-
-let list_of_typ = function
-  | TInt -> TIntList
-  | TChar -> TCharList
-  | TBool -> TBoolList
-  | TUnknown -> TUnknownList
-  | _ -> failwith "Precondition failed"
-
-let typ_of_list = function
-  | TIntList -> TInt
-  | TBoolList -> TBool
-  | TCharList -> TChar
-  | _ -> failwith "Precondition failed"
-
-let is_fun = function
-  | TIntF | TCharF | TBoolF | TIntListF | TCharListF | TBoolListF | TNoneF
-  | TUnknownF ->
-      true
-  | _ -> false
-
-let is_list = function
-  | TIntList | TCharList | TBoolList | TUnknownList -> true
-  | _ -> false
 
 type value =
   | Int of int
@@ -188,14 +113,27 @@ let rec update_env (e : entry) (env : entry list ref) =
   env := aux e !env []
 
 let (env : entry list ref) = ref []
+let decorations : (loc * typ) list ref = ref []
+let fundecls : (string * typ * typ list) list ref = ref []
+
+let fundecls_of_entry (e : entry) =
+  match e with
+  | { name; typ; value; args; body } -> (
+      match args with
+      | None -> (name, typ, [])
+      | Some lst -> (name, typ, List.map (fun { typ } -> typ) lst))
+
+let gen_fundecl (e : entry) =
+  let fundecl = fundecls_of_entry e in
+  fundecls := fundecl :: !fundecls
 
 let rec typecheck_cmd (env : entry list ref) cmd =
   match cmd with
   | Assign (var, expr, loc) -> typecheck_assign var expr loc env
-  | VarDecl (var, loc) -> typecheck_vardecl var loc env
-  | Print (expr, loc) -> typecheck_print expr loc env
-  | Read (var, loc) -> typecheck_read var loc env
-  | Convert (var, typ, loc) -> typecheck_convert var typ loc env
+  (* | VarDecl (var, loc) -> typecheck_vardecl var loc env *)
+  | Print (expr, type', loc) -> typecheck_print expr type' loc env
+  | Read (var, type', loc) -> typecheck_read var type' loc env
+  (* | Convert (var, typ, loc) -> typecheck_convert var typ loc env *)
   | If (expr, cmd1, cmd2, loc) -> typecheck_if expr cmd1 cmd2 loc env
   | While (expr, cmd, loc) -> typecheck_while expr cmd loc env
   | FuncDef (name, args, typ, body, loc) ->
@@ -243,19 +181,26 @@ and typecheck_assign lvalue expr loc env =
      ^ string_of_typ t1)
       loc
 
-and typecheck_vardecl var loc env =
-  match var with
-  | name, type', loc ->
-      let t1 = typ_of_type' type' in
-      add_typed_var name t1 env loc
+(* and typecheck_vardecl var loc env = *)
+(*   match var with *)
+(*   | name, type', loc -> *)
+(*       let t1 = typ_of_type' type' in *)
+(*       add_typed_var name t1 env loc *)
 
-and typecheck_print expr loc env =
-  let _ = typecheck_expr expr env in
-  ()
+and typecheck_print expr type' loc env =
+  let t1 = typecheck_expr expr env in
+  if List.mem t1 [ TInt; TChar; TBool; TCharList ] then
+    decorations := (loc, t1) :: !decorations
+  else
+    type_error
+      ("print() expects variable of types int, char, bool or charlist, got \
+        variable of type " ^ string_of_typ t1)
+      loc
 
-and typecheck_read var loc env =
+and typecheck_read var type' loc env =
   let t1 = typecheck_var var env in
-  if t1 = TCharList then
+  if List.mem t1 [ TInt; TChar; TCharList ] then (
+    decorations := (loc, t1) :: !decorations;
     update_env
       {
         name = get_var_name var;
@@ -264,31 +209,31 @@ and typecheck_read var loc env =
         args = None;
         body = None;
       }
-      env
+      env)
   else
     type_error
-      ("read() expects variable of type charlist, got variable of type "
-     ^ string_of_typ t1)
+      ("read() expects variable of types int, char or charlist, got variable \
+        of type " ^ string_of_typ t1)
       loc
 
-and typecheck_convert var typ loc env =
-  let t1 = typecheck_var var env in
-  let t2 = typ_of_type' typ in
-  match (t1, t2) with
-  | TCharList, TInt | TChar, TInt | TInt, TCharList | TInt, TChar ->
-      update_env
-        {
-          name = get_var_name var;
-          typ = t2;
-          value = None;
-          args = None;
-          body = None;
-        }
-        env
-  | t1, t2 ->
-      type_error
-        ("Cannot convert from " ^ string_of_typ t1 ^ " to " ^ string_of_typ t2)
-        loc
+(* and typecheck_convert var typ loc env = *)
+(*   let t1 = typecheck_var var env in *)
+(*   let t2 = typ_of_type' typ in *)
+(*   match (t1, t2) with *)
+(*   | TCharList, TInt | TChar, TInt | TInt, TCharList | TInt, TChar -> *)
+(*       update_env *)
+(*         { *)
+(*           name = get_var_name var; *)
+(*           typ = t2; *)
+(*           value = None; *)
+(*           args = None; *)
+(*           body = None; *)
+(*         } *)
+(*         env *)
+(*   | t1, t2 -> *)
+(*       type_error *)
+(*         ("Cannot convert from " ^ string_of_typ t1 ^ " to " ^ string_of_typ t2) *)
+(*         loc *)
 
 and typecheck_len expr loc env =
   let t1 = typecheck_expr expr env in
@@ -321,8 +266,8 @@ and typecheck_while expr cmd loc env =
 and typecheck_funcdef name args typ body loc env =
   let t1 = typ_of_type' typ in
   let args, t2 = typecheck_funcbody args body loc env in
-  if t1 = t2 then
-    env :=
+  if t1 = t2 then (
+    let e =
       {
         name;
         typ = typ_of_type' typ;
@@ -330,7 +275,9 @@ and typecheck_funcdef name args typ body loc env =
         args = Some args;
         body = Some body;
       }
-      :: !env
+    in
+    env := e :: !env;
+    gen_fundecl e)
   else
     type_error
       ("Declared function type is " ^ string_of_typ t1
@@ -567,4 +514,16 @@ and typecheck_expr expr env =
       let func = lookup name env loc in
       func.typ
 
-let typecheck cmd = typecheck_cmd env cmd
+let rec decorate cmd =
+  match cmd with
+  | Seq (c1, c2) -> Seq (decorate c1, decorate c2)
+  | Print (expr, typ', loc) -> Print (expr, List.assoc loc !decorations, loc)
+  | Read (expr, typ', loc) -> Read (expr, List.assoc loc !decorations, loc)
+  | _ -> cmd
+
+let typecheck cmd =
+  let _ = typecheck_cmd env cmd in
+  if !errors > 0 then (
+    print_endline ("There are " ^ string_of_int !errors ^ " type errors");
+    exit 1)
+  else (decorate cmd, !fundecls)
