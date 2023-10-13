@@ -6,9 +6,13 @@ let parse (src : string) : Pocket.Syntax.command =
   let ast = Pocket.Parser.prog Pocket.Lexer.lex lexbuf in
   ast
 
-let run (file : string) : unit =
-  file |> In_channel.read_all |> parse
-  |> Pocket.Typecheck.typecheck_cmd Pocket.Typecheck.env
+let interpret (file : string) : unit =
+  file |> In_channel.read_all |> parse |> Pocket.Typecheck.typecheck |> fun _ ->
+  ()
+
+let transpile (file : string) =
+  file |> In_channel.read_all |> parse |> Pocket.Typecheck.typecheck
+  |> Pocket.Transpile.transpile
 
 let main : unit =
   let args = Sys.get_argv () in
@@ -16,7 +20,7 @@ let main : unit =
   match len with
   | 2 ->
       let file = args.(1) in
-      run file
+      transpile file |> print_endline
   | _ ->
       print_endline "Usage: pocket <source>";
       exit 0

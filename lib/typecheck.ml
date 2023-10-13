@@ -4,6 +4,11 @@ open Types
 
 (* let gen_pos pos = (pos.pos_lnum, pos.pos_cnum - pos.pos_bol + 1) *)
 
+let print_loc (loc : loc) =
+  print_endline
+    ("line: " ^ string_of_int loc.pos_lnum ^ " col: "
+   ^ string_of_int loc.pos_cnum)
+
 let errors = ref 0
 
 let type_error (msg : string) pos : unit =
@@ -115,6 +120,7 @@ let rec update_env (e : entry) (env : entry list ref) =
 let (env : entry list ref) = ref []
 let decorations : (loc * typ) list ref = ref []
 let fundecls : (string * typ * typ list) list ref = ref []
+let list_literals : expr list list ref = ref []
 
 let fundecls_of_entry (e : entry) =
   match e with
@@ -249,7 +255,7 @@ and typecheck_if expr cmd1 cmd2 loc env =
   let t1 = typecheck_expr expr env in
   if t1 = TBool then (
     typecheck_cmd env cmd1;
-    typecheck_cmd env cmd1)
+    typecheck_cmd env cmd2)
   else
     type_error
       ("Guard for if statement must be of type bool, got " ^ string_of_typ t1)
@@ -300,7 +306,9 @@ and typecheck_funccallcmd name exprlist loc env =
   check params args
 
 and typecheck_funcbody args body loc env =
+  let global_env = !env in
   let (env : entry list ref) = ref [] in
+  let _ = env := global_env in
   let rec env_of_args args =
     match args with
     | [] -> ()
@@ -353,7 +361,8 @@ and typecheck_expr expr env =
   | Int (i, loc) -> TInt
   | Char (c, loc) -> TChar
   | Bool (b, loc) -> TBool
-  | List (exprs, loc) -> (
+  | List (exprs, s, loc) -> (
+      list_literals := exprs :: !list_literals;
       match exprs with
       | [] -> TUnknownList
       | x :: xs ->
@@ -517,9 +526,24 @@ and typecheck_expr expr env =
 let rec decorate cmd =
   match cmd with
   | Seq (c1, c2) -> Seq (decorate c1, decorate c2)
+  | Assign (var, expr, loc) -> Assign (var, expr, loc)
+  | If (expr, c1, c2, loc) -> If (expr, decorate c1, decorate c2, loc)
+  | While (expr, c, loc) -> While (expr, decorate c, loc)
   | Print (expr, typ', loc) -> Print (expr, List.assoc loc !decorations, loc)
   | Read (expr, typ', loc) -> Read (expr, List.assoc loc !decorations, loc)
-  | _ -> cmd
+  | FuncDef (name, params, typ', cmd, loc) ->
+      FuncDef (name, params, typ', decorate_body cmd, loc)
+  | FuncCallCmd ((name, exprlist), loc) -> FuncCallCmd ((name, exprlist), loc)
+  | Pass loc -> Pass loc
+(* | _ -> *)
+(*     print_endline "Precondition violated: decorate called on non-command"; *)
+(*     exit 1 *)
+
+and decorate_body body =
+  match body with
+  | Ret (Some cmd, expr, loc) -> Ret (Some (decorate cmd), expr, loc)
+  | Ret (None, expr, loc) -> Ret (None, expr, loc)
+  | NoRet cmd -> NoRet (decorate cmd)
 
 let typecheck cmd =
   let _ = typecheck_cmd env cmd in

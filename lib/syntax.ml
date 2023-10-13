@@ -81,7 +81,7 @@ and expr =
   | Int of int * loc
   | Char of char * loc
   | Bool of bool * loc
-  | List of expr list * loc
+  | List of expr list * string option * loc
   | Index of expr * expr * loc
   | Len of expr * loc
   | Unop of unop * expr * loc

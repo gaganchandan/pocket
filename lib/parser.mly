@@ -86,7 +86,7 @@ expr:
     | v=VAR { Id (v, $startpos) }
     | i=NUM { Int (i, $startpos) }
     | c=CHAR { Char (c, $startpos) }
-    | s=STR { List ((string_to_charlist s), $startpos) }
+    | s=STR { List ((string_to_charlist s), Some s, $startpos) }
     | TRUE { Bool (true, $startpos) }
     | FALSE { Bool (false, $startpos) }
     | l=lst { l }
@@ -110,8 +110,8 @@ expr:
     | fc=func_call { FuncCall (fc, $startpos) }
 
 lst:
-    | LBRACKET RBRACKET { List ([], $startpos) }
-    | LBRACKET e=elem RBRACKET { List (e, $startpos) }
+    | LBRACKET RBRACKET { List ([], None, $startpos) }
+    | LBRACKET e=elem RBRACKET { List (e, None, $startpos) }
 
 elem:
     | e=expr { [e] }
