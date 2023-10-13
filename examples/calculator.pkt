@@ -1,0 +1,68 @@
+-- Calculator in pocket 
+
+function add(x : int, y : int) : int {
+    return x + y;
+}
+
+function sub(x : int, y : int) : int {
+    return x - y;
+}
+
+function mul(x : int, y : int) : int {
+    return x * y;
+}
+
+function div(x : int, y : int) : int {
+    return x / y;
+}
+
+function main() : none {
+    running : bool = true;
+    op : int = 0;
+    x : int = 0;
+    y : int = 0;
+    print("CALCULATOR\n**********\n");
+    while(running) {
+        print("Enter the first number: ");
+        read(x);
+        print("Enter the second number: ");
+        read(y);
+        print("Enter the operation(add - 1; sub - 2; mul - 3; div - 4; exit - 5): ");
+        read(op);
+        if(op == 1) {
+            print("Result: ");
+            print(add(x, y));
+        }
+        else {
+            pass;
+        }
+        if(op == 2) {
+            print("Result: ");
+            print(sub(x, y));
+        }
+        else {
+            pass;
+        }
+        if(op == 3) {
+            print("Result: ");
+            print(mul(x, y));
+        }
+        else {
+            pass;
+        }
+        if(op == 4) {
+            print("Result: ");
+            print(div(x, y));
+        }
+        else {
+            pass;
+        }
+        if(op == 5) {
+            running = false;
+        }
+        else {
+            pass;
+        }
+        print("\n");
+    }
+}

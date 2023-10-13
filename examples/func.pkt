@@ -1,0 +1,10 @@
+function add(x : int, y : int) : int {
+    res : int = x + y;
+    return x + y;
+}
+
+function main() : none {
+    read(x : int);
+    read(y : int);
+    print(add(x + y, x - y));
+}

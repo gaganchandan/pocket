@@ -1,0 +1,46 @@
+-- FizzBuzz in pocket
+
+function check3(i : int) : bool {
+    cond : bool = i % 3 == 0; 
+    if(cond) {
+        print("Fizz");
+    }
+    else {
+        pass;
+    }
+    return cond;
+}
+
+function check5(i : int) : bool {
+    cond : bool = i % 5 == 0; 
+    if(cond) {
+        print("Buzz");
+    }
+    else {
+        pass;
+    }
+    return cond;
+}
+
+function main() : none {
+    i : int = 1;
+    matched3 : bool = false;
+    matched5 : bool = false;
+    matched : bool = false;
+    read(inp : int);
+    while(i < inp) {
+        matched3 = false;
+        matched5 = false;
+        matched3 = check3(i);
+        matched5 = check5(i);
+        matched = matched3 or matched5;
+        if(not matched) {
+            print(i);
+        }
+        else {
+            pass;
+        }
+        print(' ');
+        i = i + 1;
+    }
+}

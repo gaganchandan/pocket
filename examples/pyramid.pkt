@@ -1,0 +1,25 @@
+function print_pyramid(n : int) : none {
+    i : int = 1;
+    j : int = 0;
+    k : int = 0;
+    while (i <= n) {
+        j = 0;
+        k = 0;
+        while(j < n - i) {
+            print(" ");
+            j = j + 1;
+        }
+        while(k < 2 * i - 1) {
+            print("*");
+            k = k + 1;
+        }
+        print("\n");
+        i = i + 1;
+    }
+}
+
+function main() : none {
+    read(n : int);
+    print_pyramid(n);
+    
+}
