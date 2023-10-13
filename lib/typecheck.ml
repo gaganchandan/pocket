@@ -548,6 +548,6 @@ and decorate_body body =
 let typecheck cmd =
   let _ = typecheck_cmd env cmd in
   if !errors > 0 then (
-    print_endline ("There are " ^ string_of_int !errors ^ " type errors");
+    print_endline ("There are " ^ string_of_int !errors ^ " type error(s)");
     exit 1)
   else (decorate cmd, !fundecls)

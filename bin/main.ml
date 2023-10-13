@@ -20,7 +20,11 @@ let main : unit =
   match len with
   | 2 ->
       let file = args.(1) in
-      transpile file |> print_endline
+      (* print_endline (transpile file) *)
+      let c_code = transpile file in
+      let file = "/tmp/pocket.c" in
+      Out_channel.write_all file ~data:c_code;
+      ignore (Sys.command ("gcc " ^ file))
   | _ ->
       print_endline "Usage: pocket <source>";
       exit 0

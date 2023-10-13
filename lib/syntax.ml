@@ -108,6 +108,6 @@ and binop =
 let syntax_error (msg : string) (pos : int * int) : unit =
   let lnum, cnum = pos in
   print_endline
-    ("SyntaxError on line " ^ string_of_int lnum ^ ": " ^ msg
-   ^ string_of_int cnum);
+    ("SyntaxError on line " ^ string_of_int lnum ^ ":" ^ string_of_int cnum
+   ^ ": " ^ msg);
   exit 0

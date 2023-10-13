@@ -2,6 +2,18 @@ open Printf
 open Syntax
 open Types
 
+let rec fix_escapes' s acc =
+  match s with
+  | [] -> acc
+  | '\\' :: rest -> fix_escapes' rest (acc ^ "\\\\")
+  | '\n' :: rest -> fix_escapes' rest (acc ^ "\\n")
+  | '\r' :: rest -> fix_escapes' rest (acc ^ "\\r")
+  | '\b' :: rest -> fix_escapes' rest (acc ^ "\\b")
+  | '\t' :: rest -> fix_escapes' rest (acc ^ "\\t")
+  | c :: rest -> fix_escapes' rest (acc ^ String.make 1 c)
+
+let fix_escapes s = fix_escapes' s ""
+
 let c_type_of_typ (typ : typ) : string =
   match typ with
   | TInt | TIntF -> "int"
@@ -174,7 +186,7 @@ and transpile_expr = function
 
 and transpile_list exprs s =
   match s with
-  | Some s -> sprintf "\"%s\"" s
+  | Some s -> sprintf "\"%s\"" (fix_escapes (List.of_seq (String.to_seq s)))
   | None -> sprintf "{%s}" (gen_params exprs)
 
 and transpile_binop op e1 e2 =
