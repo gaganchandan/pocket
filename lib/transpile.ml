@@ -127,7 +127,7 @@ and transpile_read var typ =
     match typ with
     | TInt -> sprintf "scanf(\"%%d\", &%s);\n" s
     | TChar -> sprintf "scanf(\"%%c\", &%s);\n" s
-    | TCharList -> sprintf "scanf(\"%%s\", %s);\n" s
+    | TCharList -> sprintf "scanf(\"%%256s\", %s);\n" s
     | _ ->
         print_endline "Precondition violated";
         exit 1
