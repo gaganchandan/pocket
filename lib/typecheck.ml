@@ -241,15 +241,15 @@ and typecheck_read var type' loc env =
 (*         ("Cannot convert from " ^ string_of_typ t1 ^ " to " ^ string_of_typ t2) *)
 (*         loc *)
 
-and typecheck_len expr loc env =
-  let t1 = typecheck_expr expr env in
-  match t1 with
-  | TIntList | TCharList | TBoolList -> ()
-  | _ ->
-      type_error
-        ("len() expects expression of one of the list types, got expression of "
-       ^ string_of_typ t1)
-        loc
+(* and typecheck_len expr loc env = *)
+(*   let t1 = typecheck_expr expr env in *)
+(*   match t1 with *)
+(*   | TIntList | TCharList | TBoolList -> () *)
+(*   | _ -> *)
+(*       type_error *)
+(*         ("len() expects expression of one of the list types, got expression of " *)
+(*        ^ string_of_typ t1) *)
+(*         loc *)
 
 and typecheck_if expr cmd1 cmd2 loc env =
   let t1 = typecheck_expr expr env in
@@ -361,7 +361,7 @@ and typecheck_expr expr env =
   | Int (i, loc) -> TInt
   | Char (c, loc) -> TChar
   | Bool (b, loc) -> TBool
-  | List (exprs, s, loc) -> (
+  | List (exprs, s, len, loc) -> (
       list_literals := exprs :: !list_literals;
       match exprs with
       | [] -> TUnknownList
@@ -383,14 +383,14 @@ and typecheck_expr expr env =
       else
         let () = type_error "Cannot index objects that are not lists" loc in
         TError
-  | Len (expr, loc) ->
-      let t1 = typecheck_expr expr env in
-      if is_list t1 then TInt
-      else
-        let () =
-          type_error "Cannot call len() on objects that are not lists" loc
-        in
-        TError
+  (* | Len (expr, loc) -> *)
+  (*     let t1 = typecheck_expr expr env in *)
+  (*     if is_list t1 then TInt *)
+  (*     else *)
+  (*       let () = *)
+  (*         type_error "Cannot call len() on objects that are not lists" loc *)
+  (*       in *)
+  (*       TError *)
   | Unop (unop, expr, loc) -> (
       match unop with
       | Not ->
@@ -411,9 +411,9 @@ and typecheck_expr expr env =
           let t2 = typecheck_expr expr2 env in
           match (t1, t2) with
           | TInt, TInt -> TInt
-          | TIntList, TIntList -> TIntList
-          | TCharList, TCharList -> TCharList
-          | TBoolList, TBoolList -> TBoolList
+          (* | TIntList, TIntList -> TIntList *)
+          (* | TCharList, TCharList -> TCharList *)
+          (* | TBoolList, TBoolList -> TBoolList *)
           | _ ->
               let () =
                 type_error
@@ -481,9 +481,9 @@ and typecheck_expr expr env =
           | TInt, TInt -> TBool
           | TChar, TChar -> TBool
           | TBool, TBool -> TBool
-          | TIntList, TIntList -> TBool
-          | TCharList, TCharList -> TBool
-          | TBoolList, TBoolList -> TBool
+          (* | TIntList, TIntList -> TBool *)
+          (* | TCharList, TCharList -> TBool *)
+          (* | TBoolList, TBoolList -> TBool *)
           | _ ->
               let () =
                 type_error

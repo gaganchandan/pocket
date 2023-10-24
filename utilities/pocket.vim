@@ -1,4 +1,4 @@
-syn keyword Keyword if else pass while function return print read len not and or int char bool intlist charlist string boollist none true false
+syn keyword Keyword if else pass while function return print read not and or int char bool intlist charlist string boollist none true false
 
 syn match Comment "^--.*"
 syn match String "\".*\""

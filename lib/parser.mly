@@ -9,8 +9,8 @@
         in s |> String.to_seq |> List.of_seq |> make_expr 
 %}
 
-%token IF ELSE PASS WHILE FUNCTION RETURN PRINT READ LEN
-(* %token CONVERT *)
+%token IF ELSE PASS WHILE FUNCTION RETURN PRINT READ
+(* %token CONVERT  LEN *)
 %token PLUS MINUS TIMES DIVIDE MOD
 %token EQ NEQ LT GT LEQ GEQ
 %token AND OR NOT
@@ -86,7 +86,7 @@ expr:
     | v=VAR { Id (v, $startpos) }
     | i=NUM { Int (i, $startpos) }
     | c=CHAR { Char (c, $startpos) }
-    | s=STR { List ((string_to_charlist s), Some s, $startpos) }
+    | s=STR { List ((string_to_charlist s), Some s, String.length s, $startpos) }
     | TRUE { Bool (true, $startpos) }
     | FALSE { Bool (false, $startpos) }
     | l=lst { l }
@@ -106,12 +106,12 @@ expr:
     | e1=expr AND e2=expr { Binop (And, e1, e2, $startpos) }
     | e1=expr OR e2=expr { Binop (Or, e1, e2, $startpos) }
     | e1=expr LBRACKET e2=expr RBRACKET { Index (e1, e2, $startpos) }
-    | LEN LPAREN e=expr RPAREN { Len (e, $startpos) }
+    (* | LEN LPAREN e=expr RPAREN { Len (e, $startpos) } *)
     | fc=func_call { FuncCall (fc, $startpos) }
 
 lst:
-    | LBRACKET RBRACKET { List ([], None, $startpos) }
-    | LBRACKET e=elem RBRACKET { List (e, None, $startpos) }
+    | LBRACKET RBRACKET { List ([], None, 0, $startpos) }
+    | LBRACKET e=elem RBRACKET { List (e, None, List.length e, $startpos) }
 
 elem:
     | e=expr { [e] }

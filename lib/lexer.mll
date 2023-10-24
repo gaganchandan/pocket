@@ -43,7 +43,7 @@ rule lex =
     | "print"               { PRINT }
     | "read"                { READ }
     (* | "convert"             { CONVERT } *)
-    | "len"                 { LEN }
+    (* | "len"                 { LEN } *)
     (* Operators *)
     | "+"                   { PLUS }
     | "-"                   { MINUS }

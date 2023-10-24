@@ -175,11 +175,11 @@ and transpile_expr = function
   | Int (i, loc) -> string_of_int i
   | Char (c, loc) -> sprintf "\'%c\'" c
   | Bool (b, loc) -> if b then "true" else "false"
-  | List (exprs, s, loc) -> transpile_list exprs s
+  | List (exprs, s, len, loc) -> transpile_list exprs s
   | Index (e1, e2, loc) ->
       sprintf "%s[%s]" (transpile_expr e1) (transpile_expr e2)
-  | Len (e, loc) ->
-      sprintf "sizeof(%s) / sizeof(%s[0])" (transpile_expr e) (transpile_expr e)
+  (* | Len (e, loc) -> *)
+  (*     sprintf "sizeof(%s) / sizeof(%s[0])" (transpile_expr e) (transpile_expr e) *)
   | Unop (Not, e, loc) -> sprintf "!%s" (transpile_expr e)
   | Binop (op, e1, e2, loc) -> transpile_binop op e1 e2
   | FuncCall ((name, exprs), loc) -> sprintf "%s(%s)" name (gen_params exprs)

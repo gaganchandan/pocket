@@ -81,9 +81,9 @@ and expr =
   | Int of int * loc
   | Char of char * loc
   | Bool of bool * loc
-  | List of expr list * string option * loc
+  | List of expr list * string option * int * loc
   | Index of expr * expr * loc
-  | Len of expr * loc
+  (* | Len of expr * loc *)
   | Unop of unop * expr * loc
   | Binop of binop * expr * expr * loc
   | FuncCall of (string * expr list) * loc
