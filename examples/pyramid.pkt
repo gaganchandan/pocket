@@ -21,5 +21,4 @@ function print_pyramid(n : int) : none {
 function main() : none {
     read(n : int);
     print_pyramid(n);
-    
 }
