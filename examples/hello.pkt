@@ -1,0 +1,7 @@
+function main() : none {
+    print("What is your name? ");
+    read(name : charlist);
+    print("Hello, ");
+    print(name);
+    print("!\n");
+}
