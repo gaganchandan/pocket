@@ -1,3 +1,6 @@
 _build
-examples
 thoughts.txt
+errors.txt
+trial*
+build.sh
+a.out
