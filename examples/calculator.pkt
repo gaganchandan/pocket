@@ -23,12 +23,12 @@ function main() : none {
     y : int = 0;
     print("CALCULATOR\n**********\n");
     while(running) {
+        print("Enter the operation(add - 1; sub - 2; mul - 3; div - 4; exit - 5): ");
+        read(op);
         print("Enter the first number: ");
         read(x);
         print("Enter the second number: ");
         read(y);
-        print("Enter the operation(add - 1; sub - 2; mul - 3; div - 4; exit - 5): ");
-        read(op);
         if(op == 1) {
             print("Result: ");
             print(add(x, y));

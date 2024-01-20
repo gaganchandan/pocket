@@ -1,0 +1,15 @@
+function main() : none {
+    a : int = 0;
+    b : int = 1;
+    c : int = 0;
+    i : int = 0;
+    while (i < 10) {
+        print(a);
+        print(" ");
+        c = a + b;
+        a = b;
+        b = c;
+        i = i + 1;
+    }
+    print("\n");
+}
