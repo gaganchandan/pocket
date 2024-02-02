@@ -47,6 +47,10 @@ prog:
     | c=command EOF { c }
 
 command:
+    | single_command { $1 }
+    | single_command command  { Seq ($1, $2) }
+
+single_command:
     | LPAREN c=command RPAREN { c }
     | l=lvalue ASSIGN e=expr SEMICOLON { Assign (l, e, $startpos) }
     (* | t=typed_var SEMICOLON { VarDecl (t, $startpos) } *)
@@ -58,7 +62,6 @@ command:
     | fd=func_def  { fd }
     | fc=func_call SEMICOLON {FuncCallCmd (fc, $startpos) }
     | PASS SEMICOLON { Pass ($startpos) }
-    | c1=command c2=command { Seq (c1, c2) }
 
 typed_var:
     | v=VAR COLON t=ptype { (v, t, $startpos) }
