@@ -1,4 +1,6 @@
 open Core
+open Core_unix
+open Sys_unix
 open Pocket
 
 let parse (src : string) : Pocket.Syntax.command =
@@ -36,10 +38,10 @@ let main : unit =
     executable := "a.out")
   else c_file := !executable ^ ".c";
   Out_channel.write_all !c_file ~data:c_code;
-  ignore (Sys.command ("gcc " ^ !c_file ^ " -o " ^ !executable));
-  if not !emit_c then ignore (Sys.command ("rm " ^ !c_file))
+  ignore (Sys_unix.command ("gcc " ^ !c_file ^ " -o " ^ !executable));
+  if not !emit_c then ignore (Sys_unix.command ("rm " ^ !c_file))
   else
-    let exists = Sys.file_exists "/usr/bin/clang-format" in
+    let exists = Sys_unix.file_exists "/usr/bin/clang-format" in
     match exists with
     | `No | `Unknown -> ()
-    | `Yes -> ignore (Sys.command ("clang-format -i " ^ !c_file))
+    | `Yes -> ignore (Sys_unix.command ("clang-format -i " ^ !c_file))

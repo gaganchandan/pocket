@@ -1,4 +1,4 @@
 (executable
  (public_name pocket)
  (name main)
- (libraries pocket))
+ (libraries core core_unix core_unix.sys_unix pocket))
